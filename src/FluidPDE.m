@@ -1,0 +1,137 @@
+classdef FluidPDE < handle
+    % class to create and solve the fluid PDE
+    
+    % pde parameters
+    properties (Access = public)
+       
+        gravityConst = 9.8;
+        sourceFlux;
+        density;
+        viscosity;
+        inclineAngle;
+        steadyDepth;
+        LL;
+
+        epsilon = 1e-5;
+        FF = 1;
+        
+    end
+
+    methods 
+       
+        function obj = FluidPDE(varargin)
+            % class constructor to initalise FF only
+            if nargin == 0
+                % pass
+            elseif nargin == 1
+                obj.FF = varargin{1};
+            else
+                error('Constructor initialises FF only. Use setEnvVars() to initalise other fluid parameters');
+            end
+        end
+
+        function setFF(obj, FF)
+            % set FF value manually
+            obj.FF = FF;
+        end
+
+        function setEpsilon(obj, epsilon)
+            % set epsilon value
+            obj.epsilon = epsilon;
+        end
+
+
+        
+        function setEnvVars(obj, varargin)
+            % set the FF value if all environment parameters are known
+            % use if not setting FF value directly
+            
+            % read and set the environment parameters
+            p = inputParser;
+            p.KeepUnmatched = false;
+            
+            addParameter(p, 'viscosity', [], @(x) isnumeric(x) && isscalar(x));
+            addParameter(p, 'density', [], @(x) isnumeric(x) && isscalar(x));
+            addParameter(p, 'inclineAngle', [], @(x) isnumeric(x) && isscalar(x));
+            addOptional(p, 'LL', 1, @(x) isnumeric(x) && isscalar(x));
+            addOptional(p, 'sourceFlux', 1, @(x) isnumeric(x) && isscalar(x));
+
+            parse(p, varargin{:});
+            args = p.Results;
+            
+            if isempty(args.viscosity) || isempty(args.density) || isempty(args.inclineAngle)
+                error('All of mu, rho, and beta must be provided.');
+            end
+            
+            obj.viscosity = args.viscosity;
+            obj.density = args.density;
+            obj.inclineAngle = args.inclineAngle;
+            obj.LL = args.LL;
+            obj.sourceFlux = args.sourceFlux;
+
+            % calculate the F value and steadyDepth
+            obj.steadyDepth = (3*obj.viscosity*obj.sourceFlux/(obj.density*obj.gravityConst*sin(obj.inclineAngle)))^(1/3);
+            obj.FF = obj.steadyDepth/(obj.LL*tan(obj.inclineAngle));
+        end
+
+    end 
+    
+    properties
+        model;
+        solution;
+    end
+
+    methods 
+        
+        function setModel(obj, pgon, meshSize)
+
+            tr = triangulation(pgon);
+            model=createpde(1);
+            tnodes = tr.Points';
+            telements = tr.ConnectivityList';
+            geometryFromMesh(model,tnodes,telements);
+            generateMesh(model,'Hmax',meshSize);
+
+            obj.model = model;
+        end
+
+        function showGeometry(obj)
+            figure(1); pdegplot(obj.model,'EdgeLabels','on')
+        end
+
+        function specifyPDE(obj)
+            specifyCoefficients(obj.model,'m',0,'d',0,'c',@ccoeffunction,'a',0,'f',@fcoeffunction);
+        end 
+
+        function solvePDE(obj)
+            initfun = @(locations) (1+locations.x*0);
+            setInitialConditions(model,initfun);
+            results=solvepde(model);
+            obj.solution = results;
+        end
+    end
+
+
+
+
+
+    methods
+        
+        % functions for specifying the PDE
+        function c = cCoeff(obj)
+            c = @(region, state) obj.FF * state.u(1,:).^3;
+        end
+
+        function f = fCoeff(obj)
+            f = @(region, state) -3*(state.u(1,:).^2).*state.ux(1,:);
+        end
+
+        function noFluxBC = noFluxBC(obj)
+            noFluxBC = @(region, state) state.ux(1,:).^2 + obj.epsilon;
+        end
+
+        
+    end
+    
+
+end
