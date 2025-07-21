@@ -86,13 +86,12 @@ classdef FluidPDE < handle
         function setModel(obj, pgon, meshSize)
 
             tr = triangulation(pgon);
-            model=createpde(1);
+            obj.model=createpde(1);
             tnodes = tr.Points';
             telements = tr.ConnectivityList';
-            geometryFromMesh(model,tnodes,telements);
-            generateMesh(model,'Hmax',meshSize);
+            geometryFromMesh(obj.model,tnodes,telements);
+            generateMesh(obj.model,'Hmax',meshSize);
 
-            obj.model = model;
         end
 
         function showGeometry(obj)
@@ -100,15 +99,31 @@ classdef FluidPDE < handle
         end
 
         function specifyPDE(obj)
-            specifyCoefficients(obj.model,'m',0,'d',0,'c',@ccoeffunction,'a',0,'f',@fcoeffunction);
-        end 
+            specifyCoefficients(obj.model, ...
+                'm', 0, ...
+                'd', 0, ...
+                'c', obj.cCoefFunc(), ...
+                'a', 0, ...
+                'f', obj.fCoefFunc());
+        end
 
         function solvePDE(obj)
             initfun = @(locations) (1+locations.x*0);
-            setInitialConditions(model,initfun);
-            results=solvepde(model);
+            setInitialConditions(obj.model,initfun);
+            results=solvepde(obj.model);
             obj.solution = results;
         end
+
+        function plotSolution(obj, levels)
+            u = obj.solution.NodalSolution;
+            figure(2);
+            pdegplot(obj.model,'EdgeLabels','off');
+            hold on;
+            pdeplot(obj.model,'xydata',u(:,1),'contour','on',...
+            'colorbar', 'on',...
+            'levels',levels,'mesh','off','xystyle','off');
+        end
+
     end
 
 
@@ -118,11 +133,12 @@ classdef FluidPDE < handle
     methods
         
         % functions for specifying the PDE
-        function c = cCoeff(obj)
-            c = @(region, state) obj.FF * state.u(1,:).^3;
+        function c = cCoefFunc(obj)
+            FF = obj.FF;
+            c = @(region, state) FF * state.u(1,:).^3;
         end
 
-        function f = fCoeff(obj)
+        function f = fCoefFunc(obj)
             f = @(region, state) -3*(state.u(1,:).^2).*state.ux(1,:);
         end
 

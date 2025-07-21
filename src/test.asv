@@ -7,17 +7,19 @@ ycircle = sin(arr1);
 pgon = polyshape({[-5 5 5 -5], xcircle}, ...
                     {[5 5 -5 -5], ycircle});
 
-meshSize = 0.2;
-pde.setModel(pgon, meshSize);
-pde.showGeometry();
-pde.specifyPDE();
+meshSize = 0.1;
+pde.setModel(pgon, meshSize)
+pde.showGeometry()
 
 applyBoundaryCondition(pde.model,'dirichlet','Edge',[2,3,4],'u',1);
-applyBoundaryCondition(pde.model,'neumann','edge',5,'q',@fluxcond2,'g',pde.epsilon);
+applyBoundaryCondition(pde.model,'neumann','edge',5,'q',@fluxcond2,'g',epsi);
 applyBoundaryCondition(pde.model,'neumann','edge',1,'q',0,'g',0);
 
-pde.solvePDE();
-pde.plotSolution(linspace(0.5,1.5,20));
+pde.solve();
+pde.plotSolution();
+
+
+
 
 function fluxbc2 = fluxcond2(region,state)
 x = region.x;
