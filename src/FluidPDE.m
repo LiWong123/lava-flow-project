@@ -17,18 +17,7 @@ classdef FluidPDE < handle
         
     end
 
-    methods 
-       
-        function obj = FluidPDE(varargin)
-            % class constructor to initalise FF only
-            if nargin == 0
-                % pass
-            elseif nargin == 1
-                obj.FF = varargin{1};
-            else
-                error('Constructor initialises FF only. Use setEnvVars() to initalise other fluid parameters');
-            end
-        end
+    methods
 
         function setFF(obj, FF)
             % set FF value manually
@@ -74,27 +63,58 @@ classdef FluidPDE < handle
             obj.FF = obj.steadyDepth/(obj.LL*tan(obj.inclineAngle));
         end
 
-    end 
+    end
+
+
+
     
     properties
+        % domain properties
+        xmin;
+        xmax;
+        ymin;
+        ymax;
+
+        % pde properties
+        meshSize;
         model;
         solution;
     end
 
     methods 
-        
-        function setModel(obj, pgon, meshSize)
 
+        function setDomain(obj, xDomain, yDomain)
+            obj.xmin = xDomain(1);
+            obj.xmax = xDomain(2);
+            obj.ymin = yDomain(1);
+            obj.ymax = yDomain(2);
+        end
+
+        function setMeshSize(obj, meshSize)
+            obj.meshSize = meshSize;
+        end
+
+        function pgon = createObstacle(obj, xObstacle, yObstacle)
+            
+            pgon = polyshape({[obj.xmin obj.xmax obj.xmax obj.xmin], xObstacle}, ...
+                    {[obj.ymax obj.ymax obj.ymin obj.ymin], yObstacle});
+
+        end
+        
+        function setModel(obj, pgon)
+
+            % generates the mesh for solving the pde
             tr = triangulation(pgon);
             obj.model=createpde(1);
             tnodes = tr.Points';
             telements = tr.ConnectivityList';
             geometryFromMesh(obj.model,tnodes,telements);
-            generateMesh(obj.model,'Hmax',meshSize);
+            generateMesh(obj.model,'Hmax', obj.meshSize);
 
         end
 
         function showGeometry(obj)
+            % shows the geometry
             figure(1); pdegplot(obj.model,'EdgeLabels','on')
         end
 
@@ -107,9 +127,16 @@ classdef FluidPDE < handle
                 'f', obj.fCoefFunc());
         end
 
+        function applyDefaultBCs(obj)
+            
+        end
+
         function solvePDE(obj)
-            initfun = @(locations) (1+locations.x*0);
+            initfun = @(locations) (0.2+locations.x*0);
             setInitialConditions(obj.model,initfun);
+            obj.model.SolverOptions.MinStep = 0;
+            obj.model.SolverOptions.MaxIterations = 500;
+            obj.model.SolverOptions.ResidualTolerance = 1e-04;
             results=solvepde(obj.model);
             obj.solution = results;
         end
@@ -117,11 +144,13 @@ classdef FluidPDE < handle
         function plotSolution(obj, levels)
             u = obj.solution.NodalSolution;
             figure(2);
-            pdegplot(obj.model,'EdgeLabels','off');
-            hold on;
+            
             pdeplot(obj.model,'xydata',u(:,1),'contour','on',...
             'colorbar', 'on',...
             'levels',levels,'mesh','off','xystyle','off');
+            hold on;
+            p = pdegplot(obj.model,'EdgeLabels','off');
+            set(p, 'Color', 'k', 'LineWidth', 1.5); 
         end
 
     end
