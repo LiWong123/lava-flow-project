@@ -23,85 +23,71 @@ classdef FluidPDE < handle
 
     end
 
-
-
     
     properties
-        % domain properties
-        xmin;
-        xmax;
-        ymin;
-        ymax;
 
         % pde properties
-        meshSize;
+        geometry;
         model;
-        solution;
+        results;
+
     end
 
     methods 
 
-        function setDomain(obj, xDomain, yDomain)
-            obj.xmin = xDomain(1);
-            obj.xmax = xDomain(2);
-            obj.ymin = yDomain(1);
-            obj.ymax = yDomain(2);
-        end
-
-        function setMeshSize(obj, meshSize)
-            obj.meshSize = meshSize;
-        end
-
-        function pgon = createObstacle(obj, xObstacle, yObstacle)
+        function specifyPDE(obj, geometry)
             
-            pgon = polyshape({[obj.xmin obj.xmax obj.xmax obj.xmin], xObstacle}, ...
-                    {[obj.ymax obj.ymax obj.ymin obj.ymin], yObstacle});
+            obj.geometry = geometry;
+            obj.model = geometry.model;
 
-        end
-        
-        function setModel(obj, pgon)
-
-            % generates the mesh for solving the pde
-            tr = triangulation(pgon);
-            obj.model=createpde(1);
-            tnodes = tr.Points';
-            telements = tr.ConnectivityList';
-            geometryFromMesh(obj.model,tnodes,telements);
-            generateMesh(obj.model,'Hmax', obj.meshSize);
-
-        end
-
-        function showGeometry(obj)
-            % shows the geometry
-            figure(1); pdegplot(obj.model,'EdgeLabels','on')
-        end
-
-        function specifyPDE(obj)
             specifyCoefficients(obj.model, ...
                 'm', 0, ...
                 'd', 0, ...
                 'c', obj.cCoefFunc(), ...
                 'a', 0, ...
                 'f', obj.fCoefFunc());
-        end
 
-        function applyDefaultBCs(obj)
             
         end
 
+        function applyDefaultBCs(obj)
+
+            xmin = obj.geometry.xmin;
+            xmax = obj.geometry.xmax;
+            ymin = obj.geometry.ymin;
+            ymax = obj.geometry.ymax;
+
+            xmid = (xmin+xmax)/2;
+            ymid = (ymin+ymax)/2;
+            
+            farFieldEdges = [nearestEdge(obj.model.Geometry, [xmin, ymid]), ...
+                nearestEdge(obj.model.Geometry, [xmax, ymid]), ...
+                nearestEdge(obj.model.Geometry, [xmid, ymin]), ...
+                nearestEdge(obj.model.Geometry, [xmid, ymax])];
+
+            applyBoundaryCondition(obj.model,'dirichlet','Edge',farFieldEdges,'u',1);
+
+            obstacleEdges = [];
+            for i = 1:obj.model.Geometry.NumEdges
+                if not(ismember(i, farFieldEdges))
+                    obstacleEdges =[obstacleEdges, i];
+                end
+            end
+            
+            
+
+        end
+
         function solvePDE(obj)
-            initfun = @(locations) (0.2+locations.x*0);
+            initfun = @(locations) (1+locations.x*0);
             setInitialConditions(obj.model,initfun);
-            obj.model.SolverOptions.MinStep = 0;
-            obj.model.SolverOptions.MaxIterations = 50;
-            obj.model.SolverOptions.ResidualTolerance = 1e-03;
             results=solvepde(obj.model);
-            obj.solution = results;
+            obj.results = results;
         end
 
         function plotSolution(obj, levels)
-            u = obj.solution.NodalSolution;
-            figure(2);
+            u = obj.results.NodalSolution;
+            figure();
             
             pdeplot(obj.model,'xydata',u(:,1),'contour','on',...
             'colorbar', 'on',...
@@ -129,7 +115,7 @@ classdef FluidPDE < handle
             f = @(region, state) -3*(state.u(1,:).^2).*state.ux(1,:);
         end
 
-        function noFluxBC = noFluxBC(obj)
+        function noFluxBC = noFluxCond(obj)
             noFluxBC = @(region, state) state.ux(1,:).^2 + obj.epsilon;
         end
 
