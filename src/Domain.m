@@ -1,4 +1,4 @@
-classdef Geometry < handle
+classdef Domain < handle
     
     properties (Access = public)
         % domain properties
@@ -19,8 +19,8 @@ classdef Geometry < handle
             obj.xmax = xDomain(2);
             obj.ymin = yDomain(1);
             obj.ymax = yDomain(2);
-            obj.domain = polyshape({[obj.xmin obj.xmax obj.xmax obj.xmin]}, ...
-                    {[obj.ymax obj.ymax obj.ymin obj.ymin]});
+            obj.domain = polyshape({[obj.xmin obj.xmin obj.xmax obj.xmax]}, ...
+                    {[obj.ymax obj.ymin obj.ymin obj.ymax]});
         end
 
         function setMeshSize(obj, meshSize)
@@ -28,7 +28,7 @@ classdef Geometry < handle
         end
 
         function addObstacle(obj, xObstacle, yObstacle)
-            
+            % fully specify an obstacle using x and y vertex coords
             obj.domain = polyshape({[obj.xmin obj.xmax obj.xmax obj.xmin], xObstacle}, ...
                     {[obj.ymax obj.ymax obj.ymin obj.ymin], yObstacle});
 
@@ -36,6 +36,8 @@ classdef Geometry < handle
 
         function addObstacleFromEdge(obj, xEdge, yEdge, thickness)
             
+            % takes the LEFT edge of an obstacle, and removes a wall of
+            % width=thickness from the domain
             xObstacle = horzcat(xEdge,flip(xEdge)+thickness);
             yObstacle = horzcat(yEdge,flip(yEdge));
             obj.domain = polyshape({[obj.xmin obj.xmax obj.xmax obj.xmin], xObstacle}, ...

@@ -62,7 +62,7 @@ end
 
 function fluxbc2 = fluxcond2(region,state)
 x = region.x;
-fluxbc2 = x*(state.u(1,:).^2);
+fluxbc2 = -region.nx*(state.u(1,:).^2);
 end
 
 function fluxbc5 = fluxcond5(region,state)

@@ -10,7 +10,6 @@ classdef FluidPDE < handle
     end
 
     methods
-        % setters
 
         function setFF(obj, FF)
             % set FF value manually
@@ -28,7 +27,7 @@ classdef FluidPDE < handle
     properties
 
         % pde properties
-        domain;
+        geometry;
         model;
         results;
 
@@ -36,12 +35,12 @@ classdef FluidPDE < handle
 
     methods 
 
-        function specifyPDE(obj, domain)
+        function specifyPDE(obj, geometry)
             
             % imports the model mesh from the geometry and
             % sets the equation dh^3/dx = F[d/dx(h^3 dh/dx) + d/dy(h^3 dh/dy)]
-            obj.domain = domain;
-            obj.model = domain.model;
+            obj.geometry = geometry;
+            obj.model = geometry.model;
 
             specifyCoefficients(obj.model, ...
                 'm', 0, ...
@@ -67,10 +66,10 @@ classdef FluidPDE < handle
             
             % applies far field conditions: h=1 on the boundaries and
             % q \dot n = epsilon (no flux) on the obstacle
-            xmin = obj.domain.xmin;
-            xmax = obj.domain.xmax;
-            ymin = obj.domain.ymin;
-            ymax = obj.domain.ymax;
+            xmin = obj.geometry.xmin;
+            xmax = obj.geometry.xmax;
+            ymin = obj.geometry.ymin;
+            ymax = obj.geometry.ymax;
 
             xmid = (xmin+xmax)/2;
             ymid = (ymin+ymax)/2;
@@ -91,15 +90,10 @@ classdef FluidPDE < handle
             end
 
             applyBoundaryCondition(obj.model,'neumann','Edge',obstacleEdges,'q',obj.noFluxCond(),'g',obj.epsilon);
+            
+            
 
         end
-        
-        % the no flux boundary condition
-        function noFluxBC = noFluxCond(obj)
-            noFluxBC = @(region, state) -region.nx .* (state.u(1,:).^2);
-        end
-
-
 
         function solvePDE(obj)
             initfun = @(locations) (1+locations.x*0);
@@ -120,6 +114,22 @@ classdef FluidPDE < handle
             set(p, 'Color', 'k', 'LineWidth', 1.5); 
         end
 
+    end
+
+
+
+
+
+    methods
+        
+        % functions for specifying the PDE
+        
+
+        function noFluxBC = noFluxCond(obj)
+            noFluxBC = @(region, state) -region.nx .* (state.u(1,:).^2);
+        end
+
+        
     end
     
 

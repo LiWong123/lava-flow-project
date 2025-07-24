@@ -4,20 +4,18 @@ clearvars;
 domain = Domain();
 pde = FluidPDE();
 pde.setFF(0.1); % set the F value
-pde.setEpsilon(0.0001)
+pde.setEpsilon(0.1);
 
-xDomain = [-2 7]; % solve for a<x<b
+xDomain = [-5 5]; % solve for a<x<b
 yDomain = [-5 5]; % solve for c<y<d
 domain.setDomain(xDomain,yDomain);
-domain.setMeshSize(0.1); % set resolution of solver
+domain.setMeshSize(0.05); % set resolution of solver
 
 % set obstacle location
-arr1 = 0:0.01:2*pi;
-arr1 = flip(arr1);
-xcircle = cos(arr1);
-ycircle = sin(arr1);
+xVertices = [-3 -4 -4];
+yVertices = [-1 0 1];
 
-domain.addObstacle(xcircle, ycircle);
+domain.addObstacleFromEdge(xVertices, yVertices, 0.5);
 domain.setModel();
 domain.showGeometry();
 
