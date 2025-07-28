@@ -7,7 +7,7 @@ classdef Domain < handle
         ymin;
         ymax;
 
-        meshSize;
+        meshSize = 0.1;
         domain;
         model;
     end

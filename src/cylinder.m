@@ -13,7 +13,6 @@ domain.setMeshSize(0.1); % set resolution of solver
 
 % set obstacle location
 arr1 = 0:0.01:2*pi;
-arr1 = flip(arr1);
 xcircle = cos(arr1);
 ycircle = sin(arr1);
 
@@ -25,6 +24,9 @@ domain.showGeometry();
 % create PDE: dh^3/dx = F[d/dx(h^3 dh/dx) + d/dy(h^3 dh/dy)]
 pde.specifyPDE(domain);
 pde.applyDefaultBCs();
+
+pde.model.SolverOptions.MinStep = 1e-5;
+pde.model.SolverOptions.MaxIterations = 25;
 
 % solve and plot answer
 contours = linspace(0.2,3,20); % min, max contour lines, number of contour lines

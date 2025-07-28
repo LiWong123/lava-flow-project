@@ -9,7 +9,7 @@ pde.setEpsilon(0.1);
 xDomain = [-5 5]; % solve for a<x<b
 yDomain = [-5 5]; % solve for c<y<d
 domain.setDomain(xDomain,yDomain);
-domain.setMeshSize(0.05); % set resolution of solver
+domain.setMeshSize(0.1); % set resolution of solver
 
 % set obstacle location
 xVertices = [-3 -4 -4];
