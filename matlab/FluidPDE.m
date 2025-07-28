@@ -94,7 +94,7 @@ classdef FluidPDE < handle
 
         end
         
-        % the no flux boundary condition
+        % PLEASE CHECK :) the no flux boundary condition
         function noFluxBC = noFluxCond(obj)
             noFluxBC = @(region, state) -region.nx .* (state.u(1,:).^2);
         end

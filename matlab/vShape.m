@@ -24,6 +24,9 @@ domain.showGeometry();
 pde.specifyPDE(domain);
 pde.applyDefaultBCs();
 
+pde.model.SolverOptions.MinStep = 1e-5;
+pde.model.SolverOptions.MaxIterations = 25;
+
 % solve and plot answer
 contours = linspace(0.2,3,20); % min, max contour lines, number of contour lines
 pde.solvePDE();
