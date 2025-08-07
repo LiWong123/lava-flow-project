@@ -4,7 +4,7 @@ clearvars;
 domain = Domain();
 pde = FluidPDE();
 pde.setFF(0.1); % set the F value
-pde.setEpsilon(0.0001)
+pde.setEpsilon(0.00001)
 
 xDomain = [-2 7]; % solve for a<x<b
 yDomain = [-5 5]; % solve for c<y<d
@@ -25,10 +25,12 @@ domain.showGeometry();
 pde.specifyPDE(domain);
 pde.applyDefaultBCs();
 
-pde.model.SolverOptions.MinStep = 1e-5;
-pde.model.SolverOptions.MaxIterations = 25;
+pde.model.SolverOptions.MinStep = 0;
+pde.model.SolverOptions.MaxIterations = 250;
+pde.model.SolverOptions.ResidualTolerance = 3.5e-5;
 
 % solve and plot answer
 contours = linspace(0.2,3,20); % min, max contour lines, number of contour lines
-pde.solvePDE();
+%pde.solveIteratively();
+pde.solvePDE()
 pde.plotSolution(contours);

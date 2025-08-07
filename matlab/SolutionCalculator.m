@@ -1,0 +1,147 @@
+classdef SolutionCalculator < handle
+
+    properties (Access = public)
+        
+        pde;
+        xEdge;
+        yEdge;
+
+        % number of samples for plotting/finding maximum
+        samples = 1000;
+
+    end
+
+    methods
+        
+        % getters and setters
+        function obj = SolutionCalculator(pde)
+            % constructor
+            obj.pde = pde;
+            xEdge = pde.domain.xUpStreamEdge;
+            yEdge = pde.domain.yUpstreamEdge;
+            if not(issorted(yEdge) || issorted(flip(yEdge)))
+                fprintf("warning: boundary edge not properly specified - y coordinates should be increasing/decreasing")
+            end
+            obj.xEdge = xEdge;
+            obj.yEdge = yEdge;
+            
+        end
+
+        function setBoundaryEdge(obj, xEdge, yEdge)
+            % if using addObstacle when setting domain, set the upstream edge manually
+            if not(issorted(yEdge) || issorted(flip(yEdge)))
+                fprintf("warning: boundary edge not properly specified - y coordinates should be increasing/decreasing")
+            end
+            obj.xEdge = xEdge;
+            obj.yEdge = yEdge;
+            obj.xEdge = xEdge;
+            obj.yEdge = yEdge;
+        end
+    
+
+        function force = calculateForce(obj)
+
+            force = [0, 0];
+            % sum up \int h^2 \dot \n along the piecewise linear boundary
+            for i = 1:length(obj.yEdge)-1
+                force = force + integral(obj.getIntegrand(i), 0, 1, 'ArrayValued', true);
+            end
+
+        end
+
+        function integrand = getIntegrand(obj, index)
+            % integrand for the i'th piecewise linear part of boundary
+
+            xmin = obj.xEdge(index);
+            xmax = obj.xEdge(index+1);
+            ymin = obj.yEdge(index);
+            ymax = obj.yEdge(index+1);
+
+            normal = obj.findNormal(index);
+
+            % parametrise the line as r(t), so len = |r'(t)|
+            r = @(t) [xmin + (xmax-xmin)*t, ymin + (ymax-ymin)*t];
+            len = hypot(xmax-xmin, ymax-ymin);
+            
+            % then \int h^2 n ds = \int h^2 * n * len dr
+            integrand = @(t) obj.hsquared(r, t) * len * (normal);
+        end
+
+        function h2 = hsquared(obj, r, t)
+            % gives the h^2 value for a point t on line r(t)
+            coord = r(t);
+            x = coord(1);
+            y = coord(2);
+            h = interpolateSolution(obj.pde.results, x, y);
+            h2 = h^2;
+
+        end
+
+        function unitNorm = findNormal(obj, index)
+            % find the normal vector between the i and i+1'th vertex in the boundary edge
+            % normal vector always points right in this function
+            x1 = obj.xEdge(index);
+            x2 = obj.xEdge(index+1);
+            y1 = obj.yEdge(index);
+            y2 = obj.yEdge(index+1);
+            
+            % we allow dy/dx = 0 only at the top/bottom of the boundary. apply the normal to point out of boundary
+            if y1 == y2
+                if y1 > (obj.yEdge(1) + obj.yEdge(end))/2
+                    unitNorm = [0 -1];
+                else 
+                    unitNorm = [0 1];
+                end
+
+            else
+                perpGrad = -(x2-x1)/(y2-y1);
+                magnitude = hypot(1, perpGrad);
+                unitNorm = 1/magnitude*[1, perpGrad];
+            end
+        end
+
+        function magnitude = getMagnitude(obj, force)
+            magnitude = norm(force);
+        end
+
+
+        function [maxHeight, coord] = getMaxHeight(obj)
+            % returns the max height and the x and y location on the boundary where this occurs
+            % only returns a single location even if multiple exist
+
+            yy = linspace(obj.yEdge(1), obj.yEdge(end), obj.samples);
+            xx = interp1(obj.yEdge, obj.xEdge, yy, "linear");
+            hh = interpolateSolution(obj.pde.results, xx, yy);
+
+            [maxHeight, id] = max(hh);
+            coord = [xx(id), yy(id)];
+            
+        end
+
+        function plotBoundarySolution(obj)
+            %sketch h values for different y values. default of 1000 samples but can be changed by user
+
+            yy = linspace(obj.yEdge(1), obj.yEdge(end), obj.samples);
+            xx = interp1(obj.yEdge, obj.xEdge, yy, "linear");
+            hh = interpolateSolution(obj.pde.results, xx, yy);
+
+            [hmax, coord] = getMaxHeight(obj);
+            xCoord = coord(1);
+            yCoord = coord(2);
+            
+            figure();
+            hold on;
+            grid on;
+            plot(yy,hh);
+            plot(yCoord, hmax, 'o','MarkerSize', 6, 'MarkerFaceColor', 'k', 'MarkerEdgeColor','k');
+            text(yCoord-0.2,hmax+0.1,sprintf('x=%.3f, y=%.3f, h=%.3f', xCoord, yCoord, hmax))
+            ylabel('height of flow');
+            xlabel('y');
+
+        end
+
+    end
+
+
+
+end
