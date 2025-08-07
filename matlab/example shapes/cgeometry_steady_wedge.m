@@ -1,3 +1,5 @@
+% code from Ed
+
 
 global FF;
 FF=0.1;

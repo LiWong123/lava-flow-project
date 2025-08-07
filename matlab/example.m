@@ -58,8 +58,16 @@ pde.plotSolution(contours);
 %% -------------------------------------------------
 % to calculate the force / graph h values
 solutionCalculator = SolutionCalculator(pde);
+% if you did NOT use either domain.addFlatEdgeObstacle or domain.addObstacleFromEdge, you need to specify the upstream boundary as such:
+% solutionCalculator.setBoundaryEdge(xVertices, yVertices);
+
+% plots the height of fluid for the y values on the upstream boundary
 solutionCalculator.plotBoundarySolution();
+
+% get the maximum height of fluid along the wall, and the x,y coord where this occurs
 [hMax, coord] = solutionCalculator.getMaxHeight();
 fprintf('max fluid height of %.4f, at (%.3f, %.3f)', hMax, coord(1), coord(2));
+
+% calculates the force via \int h^2 n ds on the boundary
 force = solutionCalculator.calculateForce()
 magnitude = solutionCalculator.getMagnitude(force)
