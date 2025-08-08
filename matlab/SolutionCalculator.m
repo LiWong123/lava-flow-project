@@ -34,8 +34,6 @@ classdef SolutionCalculator < handle
             end
             obj.xEdge = xEdge;
             obj.yEdge = yEdge;
-            obj.xEdge = xEdge;
-            obj.yEdge = yEdge;
         end
 
         function h = getH(obj, x, y)
@@ -50,6 +48,7 @@ classdef SolutionCalculator < handle
             force = [0, 0];
             % sum up \int h^2 \dot \n along the piecewise linear boundary
             for i = 1:length(obj.yEdge)-1
+                integral(obj.getIntegrand(i), 0, 1, 'ArrayValued', true)
                 force = force + integral(obj.getIntegrand(i), 0, 1, 'ArrayValued', true);
             end
 
@@ -111,13 +110,23 @@ classdef SolutionCalculator < handle
         end
 
 
+        function [hh, xx, yy] = safeInterpBoundary(obj)
+            
+            % removes part of the boundary where dy/dx=0 to allow iteration over y direction
+            [uniqYEdge, indices] = unique(obj.yEdge, 'stable');
+            reducedXEdge = obj.xEdge(indices);
+            yy = linspace(obj.yEdge(1), obj.yEdge(end), obj.samples);
+            xx = interp1(uniqYEdge, reducedXEdge, yy, "linear");
+            hh = interpolateSolution(obj.pde.results, xx, yy);
+
+        end
+
+
         function [maxHeight, coord] = getMaxHeight(obj)
             % returns the max height and the x and y location on the boundary where this occurs
             % only returns a single location even if multiple exist
 
-            yy = linspace(obj.yEdge(1), obj.yEdge(end), obj.samples);
-            xx = interp1(obj.yEdge, obj.xEdge, yy, "linear");
-            hh = interpolateSolution(obj.pde.results, xx, yy);
+            [hh, xx, yy] = obj.safeInterpBoundary();
 
             [maxHeight, id] = max(hh);
             coord = [xx(id), yy(id)];
@@ -127,11 +136,10 @@ classdef SolutionCalculator < handle
         function plotBoundarySolution(obj)
             %sketch h values for different y values. default of 1000 samples but can be changed by user
 
-            yy = linspace(obj.yEdge(1), obj.yEdge(end), obj.samples);
-            xx = interp1(obj.yEdge, obj.xEdge, yy, "linear");
-            hh = interpolateSolution(obj.pde.results, xx, yy);
-
-            [hmax, coord] = getMaxHeight(obj);
+            [hh, ~, yy] = obj.safeInterpBoundary();
+            
+            % find the x and y coordinates of the point where the max h value is
+            [hmax, coord] = obj.getMaxHeight();
             xCoord = coord(1);
             yCoord = coord(2);
             

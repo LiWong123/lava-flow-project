@@ -45,8 +45,6 @@ classdef Domain < handle
             
             if xEdge(1) == xEdge(end)
                 xFlat = xEdge(1);
-                xObstacle = xEdge;
-                yObstacle = yEdge;
             elseif xEdge(1) > xEdge(end)
                 xFlat = xEdge(1);
                 xObstacle = [xEdge, xFlat];
