@@ -182,14 +182,14 @@ classdef FluidPDE < handle
             end
 
             u = obj.results.NodalSolution;
-            figure();
+            figure('Theme', 'light');
             
             pdeplot(obj.model,'xydata',u(:,1),'contour','on',...
             'colorbar', 'on',...
             'levels',levels,'mesh','off','xystyle','off');
             hold on;
             p = pdegplot(obj.model,'EdgeLabels','off');
-            set(p, 'Color', 'k', 'LineWidth', 1.5); 
+            set(p, 'Color', 'k', 'LineWidth', 1.5);
         end
 
     end

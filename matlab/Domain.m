@@ -113,7 +113,7 @@ classdef Domain < handle
 
         function showGeometry(obj)
             % shows the geometry
-            figure(); 
+            figure('Theme', 'light'); 
             pdegplot(obj.model,'EdgeLabels','on')
         end
 

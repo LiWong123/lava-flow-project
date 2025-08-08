@@ -135,7 +135,7 @@ classdef SolutionCalculator < handle
             xCoord = coord(1);
             yCoord = coord(2);
             
-            figure('Theme', 'light');
+            figure('t');
             hold on;
             grid on;
             plot(yy,hh);

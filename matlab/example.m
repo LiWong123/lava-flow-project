@@ -14,8 +14,8 @@ domain.setMeshSize(0.1); % set resolution of solver
 
 % set obstacle location via the vertices of the obstacle. ensure the vertices are listed either clockwise or counterclockwise 
 % limitations: the obstacle boundary must not have dy/dx = 0 except possibly at ymin/ymax
-xVertices = [0 -1 0];
-yVertices = [-1 0 1]; % yVertices should be increasing
+xVertices = [-1 0];
+yVertices = [-1 1]; % yVertices should be increasing
 
 % 3 options to set the obstacle
 % 1. domain.addObstacle(xVertices, yVertices): if you want to specify all the vertices of the obstacle
@@ -45,7 +45,7 @@ pde.applyDefaultBCs();
 % pde.model.SolverOptions.MinStep = 0;
 % pde.model.SolverOptions.MaxIterations = 50;
 % pde.model.SolverOptions.ResidualTolerance = 1e-4;
-pde.model.SolverOptions.ResidualTolerance = 1.78e-4;
+pde.model.SolverOptions.ResidualTolerance = 5.7582e-4;
 
 
 % solve and plot answer
@@ -60,6 +60,9 @@ pde.plotSolution(contours);
 solutionCalculator = SolutionCalculator(pde);
 % if you did NOT use either domain.addFlatEdgeObstacle or domain.addObstacleFromEdge, you need to specify the upstream boundary as such:
 % solutionCalculator.setBoundaryEdge(xVertices, yVertices);
+
+% use this function to get the h value at any point:
+solutionCalculator.getH(-1.5, 1.5);
 
 % plots the height of fluid for the y values on the upstream boundary
 solutionCalculator.plotBoundarySolution();
