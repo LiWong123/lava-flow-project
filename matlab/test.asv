@@ -13,7 +13,7 @@ domain.setDomain(xDomain,yDomain);
 domain.setMeshSize(0.1);
 
 yEdge = linspace(-1, 1, 300);
-xEdge = yEdge.^2;
+xEdge = -yEdge.^2
 
 domain.addFlatEdgeObstacle(xEdge, yEdge);
 
@@ -42,7 +42,7 @@ solutionCalculator.plotBoundarySolution();
 [hMax, coord] = solutionCalculator.getMaxHeight();
 fprintf('max fluid height of %.4f, at (%.3f, %.3f)\n', hMax, coord(1), coord(2));
 
-force = solutionCalculator.calculateForce()
-magnitude = solutionCalculator.getMagnitude(force)
+% force = solutionCalculator.calculateForce()
+% magnitude = solutionCalculator.getMagnitude(force)
 
 

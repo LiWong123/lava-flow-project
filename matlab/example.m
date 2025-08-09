@@ -4,7 +4,7 @@ clearvars;
 domain = Domain();
 pde = FluidPDE();
 pde.setVerbosity(true); % enables warnings/solvepde statistics
-pde.setFF(0.1); % set the F value
+pde.setFF(1); % set the F value
 pde.setEpsilon(1e-7); % set epsilon value
 
 xDomain = [-3 10]; % solve for a<x<b
@@ -14,8 +14,8 @@ domain.setMeshSize(0.1); % set resolution of solver
 
 % set obstacle location via the vertices of the obstacle. ensure the vertices are listed either clockwise or counterclockwise 
 % limitations: the obstacle boundary must not have dy/dx = 0 except possibly at ymin/ymax
-xVertices = [0 -2 0];
-yVertices = [-1 0 1]; % yVertices should be increasing
+xVertices = [0 -0.7];
+yVertices = [-1 1]; % yVertices should be increasing
 
 % 3 options to set the obstacle
 % 1. domain.addObstacle(xVertices, yVertices): if you want to specify all the vertices of the obstacle
@@ -45,12 +45,12 @@ pde.applyDefaultBCs();
 % pde.model.SolverOptions.MinStep = 0;
 % pde.model.SolverOptions.MaxIterations = 50;
 % pde.model.SolverOptions.ResidualTolerance = 1e-4;
-pde.model.SolverOptions.ResidualTolerance = 5.7582e-4;
+pde.model.SolverOptions.ResidualTolerance = 7e-4;
 
 
 % solve and plot answer
-contours = linspace(0.2,3,20); % min, max contour lines, number of contour lines
-% contours = 20 % alternatively simply specify the number of contour lines
+%contours = linspace(0.2,3,20); % min, max contour lines, number of contour lines
+contours = 20; % alternatively simply specify the number of contour lines
 pde.solvePDE();
 pde.plotSolution(contours);
 

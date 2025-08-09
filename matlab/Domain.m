@@ -62,7 +62,6 @@ classdef Domain < handle
             obj.domain = polyshape({[obj.xmin obj.xmax obj.xmax obj.xmin], xObstacle}, ...
                     {[obj.ymax obj.ymax obj.ymin obj.ymin], yObstacle});
 
-
         end
 
         function addObstacleFromEdge(obj, xEdge, yEdge, thickness)

@@ -8,9 +8,9 @@ classdef SolutionCalculator < handle
 
         % number of samples for plotting/finding maximum
         samples = 1000;
-        safeBoundaryX;
-        safeBoundaryY;
-        safeBoundaryH;
+        boundaryX;
+        boundaryY;
+        boundaryH;
 
     end
 
@@ -36,9 +36,9 @@ classdef SolutionCalculator < handle
                 error("no boundary specified. if using addObstacle, specify the upstream edge with SolutionCalculator(pde, xEdge, yEdge)")
             else
                 [hh, xx, yy] = obj.safeInterpBoundary();
-                obj.safeBoundaryH = hh;
-                obj.safeBoundaryX = xx;
-                obj.safeBoundaryY = yy;
+                obj.boundaryH = hh;
+                obj.boundaryX = xx;
+                obj.boundaryY = yy;
             end
             
         end
@@ -52,7 +52,6 @@ classdef SolutionCalculator < handle
             yy = linspace(obj.yEdge(1), obj.yEdge(end), obj.samples);
             xx = interp1(uniqYEdge, reducedXEdge, yy, "linear");
             hh = interpolateSolution(obj.pde.results, xx, yy);
-            hh = hh';
             
             % removes any NaN values
             indices = find(~isnan(hh));
@@ -104,7 +103,7 @@ classdef SolutionCalculator < handle
             y = coord(2);
             h = interpolateSolution(obj.pde.results, x, y);
             if isnan(h)
-                h = interp1(obj.safeBoundaryY, obj.safeBoundaryH, y, 'linear');
+                h = 
             end
             h2 = h^2;
 
@@ -145,8 +144,8 @@ classdef SolutionCalculator < handle
             % returns the max height and the x and y location on the boundary where this occurs
             % only returns a single location even if multiple exist
 
-            [maxHeight, id] = max(obj.safeBoundaryH);
-            coord = [obj.safeBoundaryX(id), obj.safeBoundaryY(id)];
+            [maxHeight, id] = max(obj.boundaryH);
+            coord = [obj.boundaryX(id), obj.boundaryY(id)];
             
         end
 
@@ -161,15 +160,13 @@ classdef SolutionCalculator < handle
             figure('Theme', 'light');
             hold on;
             grid on;
-            plot(obj.safeBoundaryY,obj.safeBoundaryH);
+            plot(obj.boundaryY,obj.boundaryH);
             plot(yCoord, hmax, 'o','MarkerSize', 6, 'MarkerFaceColor', 'k', 'MarkerEdgeColor','k');
             text(yCoord-0.2,hmax+0.1,sprintf('x=%.3f, y=%.3f, h=%.3f', xCoord, yCoord, hmax), 'Color', 'black');
             ylabel('height of flow');
             xlabel('y');
 
         end
-
-        
 
     end
 

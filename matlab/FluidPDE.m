@@ -4,9 +4,9 @@ classdef FluidPDE < handle
     % pde parameters
     properties (Access = public)
 
-        epsilon = 1e-5;
+        epsilon = 1e-7;
         FF = 1;
-        verbosity = true;
+        verbosity = false;
         
     end
 
