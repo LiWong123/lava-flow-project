@@ -12,10 +12,10 @@ yDomain = [-3 3];
 domain.setDomain(xDomain,yDomain);
 domain.setMeshSize(0.1);
 
-yEdge = linspace(-1, 1, 300);
-xEdge = yEdge.^2;
+xEdge = [0 -1];
+yEdge = [1 0];
 
-domain.addFlatEdgeObstacle(xEdge, yEdge);
+domain.addSymmetricObstacle(xEdge, yEdge);
 
 domain.setModel();
 domain.showGeometry();
@@ -24,25 +24,9 @@ domain.showGeometry();
 
 
 
-pde.specifyPDE(domain);
-pde.applyDefaultBCs();
-pde.model.SolverOptions.ResidualTolerance = 1e-3;
-
-contours = 20;
-pde.solvePDE();
-pde.plotSolution(contours);
-
 
 %% -------------------------------------------------
 
-solutionCalculator = SolutionCalculator(pde);
 
-solutionCalculator.plotBoundarySolution();
-
-[hMax, coord] = solutionCalculator.getMaxHeight();
-fprintf('max fluid height of %.4f, at (%.3f, %.3f)\n', hMax, coord(1), coord(2));
-
-force = solutionCalculator.calculateForce()
-magnitude = solutionCalculator.getMagnitude(force)
 
 

@@ -121,7 +121,7 @@ classdef FluidPDE < handle
             obj.results = results;
         end
 
-        % % not useful tbh
+        % % completely useless lol
         % function solveIteratively(obj)
         % 
         %     curEpsilon = 0.1;

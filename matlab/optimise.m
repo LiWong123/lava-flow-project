@@ -1,8 +1,18 @@
 close all force;
 clearvars;
 
-xx = linspace(-0.1, -5, 10);
-forces = arrayfun(@(x) findForce(x, 1), xx);
+xx = linspace(-0.5, -5, 10);
+forces = arrayfun(@(x) findForce(x, 0.05), xx);
+
+figure('Theme', 'light');
+hold on;
+grid on;
+plot(xx, forces);
+ylabel('magnitude of force on upstream boundary');
+xlabel('vertex at (x,-1) and (0,1)');
+
+xx = linspace(-1, -3, 20);
+forces = arrayfun(@(x) findForce(x, 0.05), xx);
 
 figure('Theme', 'light');
 hold on;
@@ -26,14 +36,14 @@ function force = findForce(xVertex, F)
     xDomain = [xMin 10];
     yDomain = [-3 3];
     domain.setDomain(xDomain,yDomain);
-    domain.setMeshSize(0.1);
+    domain.setMeshSize(0.05);
     
     domain.addFlatEdgeObstacle(xEdge, yEdge);
     domain.setModel();
     
     pde.specifyPDE(domain);
     pde.applyDefaultBCs();
-    pde.model.SolverOptions.ResidualTolerance = 7e-4;
+    pde.model.SolverOptions.ResidualTolerance = 5e-4;
     pde.solvePDE();
     
     solutionCalculator = SolutionCalculator(pde);

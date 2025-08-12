@@ -23,6 +23,7 @@ yVertices = [-1 1]; % yVertices should be increasing
 % 3. domain.addObstacleFromEdge(xVertices, yVertices, thickness): specify only the upstream boundary + ensure that the downstream boundary is parallel to the upstream boundary
 domain.addFlatEdgeObstacle(xVertices, yVertices);
 
+% creates the mesh
 domain.setModel();
 domain.showGeometry();
 

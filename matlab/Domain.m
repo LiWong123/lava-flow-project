@@ -10,6 +10,8 @@ classdef Domain < handle
         smallFluxEdge = NaN;
         xUpStreamEdge = NaN;
         yUpstreamEdge = NaN;
+        
+        symmetricDomain = false;
 
         meshSize = 0.1;
         domain;
@@ -77,6 +79,25 @@ classdef Domain < handle
                     {[obj.ymax obj.ymax obj.ymin obj.ymin], yObstacle});
 
         end 
+
+
+        function addSymmetricObstacle(obj, xEdge, yEdge)
+
+            obj.xUpStreamEdge = xEdge;
+            obj.yUpstreamEdge = yEdge;
+            
+            xObstacle = horzcat(xEdge, flip(xEdge));
+            yObstacle = horzcat(yEdge, -flip(yEdge));
+
+            xFlat = max([xEdge(1), yEdge(end)]);
+
+            obj.smallFluxEdge = [xFlat, 0];
+
+            obj.domain = polyshape({[obj.xmin obj.xmax obj.xmax obj.xmin], xObstacle}, ...
+                    {[obj.ymax obj.ymax obj.ymin obj.ymin], yObstacle});
+            
+        end
+
         
         function setModel(obj, meshSize)
 
