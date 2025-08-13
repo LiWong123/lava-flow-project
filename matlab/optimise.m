@@ -11,16 +11,6 @@ plot(xx, forces);
 ylabel('magnitude of force on upstream boundary');
 xlabel('vertex at (x,-1) and (0,1)');
 
-xx = linspace(-1, -3, 20);
-forces = arrayfun(@(x) findForce(x, 0.05), xx);
-
-figure('Theme', 'light');
-hold on;
-grid on;
-plot(xx, forces);
-ylabel('magnitude of force on upstream boundary');
-xlabel('vertex at (x,-1) and (0,1)');
-
 function force = findForce(xVertex, F)
 
     domain = Domain();

@@ -82,16 +82,27 @@ classdef Domain < handle
 
 
         function addSymmetricObstacle(obj, xEdge, yEdge)
+            % flips the edge over the x axis to create the obstacle
 
             obj.xUpStreamEdge = xEdge;
             obj.yUpstreamEdge = yEdge;
-            
+            xFlipEdge = flip(xEdge);
+            yFlipEdge = -flip(yEdge);
+
             if xEdge(1) < xEdge(end)
                 xFlat = xEdge(end);
-                xObstacle = horzcat(xEdge, )
+            else
+                xFlat = xEdge(1);
+                if yEdge(end) == 0
+                    xFlipEdge(1) = [];
+                    yFlipEdge(1) = [];
+                end
             end
 
-            obj.smallFluxEdge = [xFlat, (yEdge(1)+yEdge(end))/2];
+            xObstacle = horzcat(xEdge, xFlipEdge);
+            yObstacle = horzcat(yEdge, yFlipEdge);
+           
+            obj.smallFluxEdge = [xFlat, 0];
 
             obj.domain = polyshape({[obj.xmin obj.xmax obj.xmax obj.xmin], xObstacle}, ...
                     {[obj.ymax obj.ymax obj.ymin obj.ymin], yObstacle});

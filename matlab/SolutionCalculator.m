@@ -150,7 +150,7 @@ classdef SolutionCalculator < handle
             
         end
 
-        function plotBoundarySolution(obj)
+        function plotBoundarySolution(obj, fileName, dir)
             %sketch h values for different y values. default of 1000 samples but can be changed by user
             
             % find the x and y coordinates of the point where the max h value is
@@ -166,6 +166,13 @@ classdef SolutionCalculator < handle
             text(yCoord-0.2,hmax+0.1,sprintf('x=%.3f, y=%.3f, h=%.3f', xCoord, yCoord, hmax), 'Color', 'black');
             ylabel('height of flow');
             xlabel('y');
+            
+            % to save the figure
+            if nargin == 2
+                Utils.saveFigure(fileName)
+            elseif nargin == 3
+                Utils.saveFigure(fileName, dir)
+            end
 
         end
 

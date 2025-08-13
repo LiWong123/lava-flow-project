@@ -82,15 +82,26 @@ classdef Domain < handle
 
 
         function addSymmetricObstacle(obj, xEdge, yEdge)
+            % takes an edge, reflects in the x axis to create the object
 
             obj.xUpStreamEdge = xEdge;
             obj.yUpstreamEdge = yEdge;
-            
-            xObstacle = horzcat(xEdge, flip(xEdge));
-            yObstacle = horzcat(yEdge, -flip(yEdge));
+            xFlipEdge = flip(xEdge);
+            yFlipEdge = -flip(yEdge);
 
-            xFlat = max([xEdge(1), yEdge(end)]);
+            if xEdge(1) < xEdge(end)
+                xFlat = xEdge(end);
+            else
+                xFlat = xEdge(1);
+                if yEdge(end) == 0
+                    xFlipEdge(1) = [];
+                    yFlipEdge(1) = [];
+                end
+            end
 
+            xObstacle = horzcat(xEdge, xFlipEdge);
+            yObstacle = horzcat(yEdge, yFlipEdge);
+           
             obj.smallFluxEdge = [xFlat, 0];
 
             obj.domain = polyshape({[obj.xmin obj.xmax obj.xmax obj.xmin], xObstacle}, ...
@@ -141,10 +152,17 @@ classdef Domain < handle
 
         end
 
-        function showGeometry(obj)
+        function showGeometry(obj, fileName, dir)
             % shows the geometry
             figure('Theme', 'light'); 
             pdegplot(obj.model,'EdgeLabels','on')
+            
+            % to save the figure
+            if nargin == 2
+                Utils.saveFigure(fileName)
+            elseif nargin == 3
+                Utils.saveFigure(fileName, dir)
+            end
         end
 
     end

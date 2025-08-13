@@ -1,0 +1,21 @@
+classdef Utils
+
+    methods (Static)
+
+        function saveFigure(name, dir)
+
+            if nargin == 1
+
+                
+
+            elseif nargin == 2
+
+            
+            end
+
+
+        end
+
+    end
+
+end

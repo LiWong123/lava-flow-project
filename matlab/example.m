@@ -1,11 +1,12 @@
 close all force;
 clearvars;
+% note: if directory not specified, figures will be saved to curdir/figures
 
 domain = Domain();
 pde = FluidPDE();
 pde.setVerbosity(true); % enables warnings/solvepde statistics
-pde.setFF(1); % set the F value
-pde.setEpsilon(1e-7); % set epsilon value
+pde.setFF(0.1); % set the F value
+%pde.setEpsilon(1e-7); % set epsilon value: default is 1e-7
 
 xDomain = [-3 10]; % solve for a<x<b
 yDomain = [-3 3]; % solve for c<y<d
@@ -14,17 +15,20 @@ domain.setMeshSize(0.1); % set resolution of solver
 
 % set obstacle location via the vertices of the obstacle. ensure the vertices are listed either clockwise or counterclockwise 
 % limitations: the obstacle boundary must not have dy/dx = 0 except possibly at ymin/ymax
-xVertices = [0 -0.7];
-yVertices = [-1 1]; % yVertices should be increasing
+xVertices = [0 -1];
+yVertices = [-1 0]; % yVertices should be increasing
 
-% 3 options to set the obstacle
+% 4 options to set the obstacle
 % 1. domain.addObstacle(xVertices, yVertices): if you want to specify all the vertices of the obstacle
 % 2. domain.addFlatEdgeObstacle(xVertices, yVertices): specify only the upstream boundary + ensure that the downstream boundary is parallel to sources
 % 3. domain.addObstacleFromEdge(xVertices, yVertices, thickness): specify only the upstream boundary + ensure that the downstream boundary is parallel to the upstream boundary
-domain.addFlatEdgeObstacle(xVertices, yVertices);
+% 4. domain.addSymmetricObstacle(xVertices, yVertices): specify ONE of the edges, flips it in the x axis to create the obstacle
+
+domain.addSymmetricObstacle(xVertices, yVertices);
 
 % creates the mesh
 domain.setModel();
+% optional: save the figure with domain.showGeometry(fileName) or domain.showGeometry(fileName, dir)
 domain.showGeometry();
 
 %% ----------------------------------------------------------
@@ -46,33 +50,37 @@ pde.applyDefaultBCs();
 % pde.model.SolverOptions.MinStep = 0;
 % pde.model.SolverOptions.MaxIterations = 50;
 % pde.model.SolverOptions.ResidualTolerance = 1e-4;
-pde.model.SolverOptions.ResidualTolerance = 7e-4;
+pde.model.SolverOptions.ResidualTolerance = 1e-3;
 
 
 % solve and plot answer
 %contours = linspace(0.2,3,20); % min, max contour lines, number of contour lines
 contours = 20; % alternatively simply specify the number of contour lines
 pde.solvePDE();
+% optional: save contour plot with: pde.plotSolution(contours, fileName, dir)
 pde.plotSolution(contours);
 
 
 %% -------------------------------------------------
 % to calculate the force / graph h values
 solutionCalculator = SolutionCalculator(pde);
-% if you did NOT use either domain.addFlatEdgeObstacle or domain.addObstacleFromEdge, you need to specify the upstream boundary as such:
+% if you did NOT use either domain.addFlatEdgeObstacle/addObstacleFromEdge/addSymmetricObstacle, you need to specify the upstream boundary as such:
 % solutionCalculator.setBoundaryEdge(xVertices, yVertices);
 
 % use this function to get the h value at any point:
 % solutionCalculator.getH(-1.5, 1.5);
 
 % plots the height of fluid for the y values on the upstream boundary
-solutionCalculator.plotBoundarySolution();
+% optional: save plot via plotBoundarySolution(fileName, dir)
+solutionCalculator.plotBoundarySolution("example plot")
+%solutionCalculator.plotBoundarySolution("example height plot", "C:\Users\liwon\Desktop\lava-flow-project\matlab\out");
 
 % get the maximum height of fluid along the wall, and the x,y coord where this occurs
 [hMax, coord] = solutionCalculator.getMaxHeight();
 fprintf('max fluid height of %.4f, at (%.3f, %.3f)', hMax, coord(1), coord(2));
 
 % calculates the force via \int h^2 n ds on the boundary
+% note: if using addSymmetricObstacle, this only gives the force on the specified edge. total magnitude should be DOUBLED
 force = solutionCalculator.calculateForce()
 magnitude = solutionCalculator.getMagnitude(force)
 

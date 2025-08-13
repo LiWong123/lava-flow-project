@@ -173,11 +173,11 @@ classdef FluidPDE < handle
 
 
 
-        function plotSolution(obj, levels)
+        function plotSolution(obj, levels, fileName, dir)
             % contour plot. allow user to specify contour lines
             
             % default 20 contour lines if no input given
-            if nargin < 2
+            if nargin == 1
                 levels = 20;
             end
 
@@ -190,6 +190,13 @@ classdef FluidPDE < handle
             hold on;
             p = pdegplot(obj.model,'EdgeLabels','off');
             set(p, 'Color', 'k', 'LineWidth', 1.5);
+
+            if nargin == 3
+                Utils.saveFigure(fileName)
+            elseif nargin == 4
+                Utils.saveFigure(fileName, dir)
+            end
+
         end
 
     end

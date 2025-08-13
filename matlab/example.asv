@@ -1,6 +1,6 @@
 close all force;
 clearvars;
-% note: if directory not specified, figures will be saved to curdir/figures
+% note: if directory not specified, plots will
 
 domain = Domain();
 pde = FluidPDE();
@@ -15,8 +15,8 @@ domain.setMeshSize(0.1); % set resolution of solver
 
 % set obstacle location via the vertices of the obstacle. ensure the vertices are listed either clockwise or counterclockwise 
 % limitations: the obstacle boundary must not have dy/dx = 0 except possibly at ymin/ymax
-xVertices = [0 -1 0];
-yVertices = [-1 0 1]; % yVertices should be increasing
+xVertices = [0 -1];
+yVertices = [-1 0]; % yVertices should be increasing
 
 % 4 options to set the obstacle
 % 1. domain.addObstacle(xVertices, yVertices): if you want to specify all the vertices of the obstacle
@@ -24,7 +24,7 @@ yVertices = [-1 0 1]; % yVertices should be increasing
 % 3. domain.addObstacleFromEdge(xVertices, yVertices, thickness): specify only the upstream boundary + ensure that the downstream boundary is parallel to the upstream boundary
 % 4. domain.addSymmetricObstacle(xVertices, yVertices): specify ONE of the edges, flips it in the x axis to create the obstacle
 
-domain.addFlatEdgeObstacle(xVertices, yVertices);
+domain.addSymmetricObstacle(xVertices, yVertices);
 
 % creates the mesh
 domain.setModel();
@@ -72,8 +72,7 @@ solutionCalculator = SolutionCalculator(pde);
 
 % plots the height of fluid for the y values on the upstream boundary
 % optional: save plot via plotBoundarySolution(fileName, dir)
-solutionCalculator.plotBoundarySolution()
-%solutionCalculator.plotBoundarySolution("example plot", "C:\Users\liwon\Desktop\lava-flow-project\matlab\out");
+solutionCalculator.plotBoundarySolution("example height plot");
 
 % get the maximum height of fluid along the wall, and the x,y coord where this occurs
 [hMax, coord] = solutionCalculator.getMaxHeight();
