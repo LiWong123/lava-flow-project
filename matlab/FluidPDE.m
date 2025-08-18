@@ -62,6 +62,7 @@ classdef FluidPDE < handle
             if obj.verbosity
                 obj.model.SolverOptions.ReportStatistics = 'on';
             end
+            obj.applyDefaultBCs();
         end
         
         % functions for specifying the PDE

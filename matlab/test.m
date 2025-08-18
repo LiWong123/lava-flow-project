@@ -1,87 +1,46 @@
 close all force;
 clearvars;
-% note: if directory not specified, figures will be saved to curdir/figures
 
 domain = Domain();
 pde = FluidPDE();
-pde.setVerbosity(true); % enables warnings/solvepde statistics
-pde.setFF(0.1); % set the F value
-%pde.setEpsilon(1e-7); % set epsilon value: default is 1e-7
+pde.setVerbosity(true);
+pde.setFF(0.1);
 
-xDomain = [-3 10]; % solve for a<x<b
-yDomain = [-3 3]; % solve for c<y<d
+
+xDomain = [-3 10];
+yDomain = [-3 3];
 domain.setDomain(xDomain,yDomain);
-domain.setMeshSize(0.1); % set resolution of solver
+domain.setMeshSize(0.1);
 
-% set obstacle location via the vertices of the obstacle. ensure the vertices are listed either clockwise or counterclockwise 
-% limitations: the obstacle boundary must not have dy/dx = 0 except possibly at ymin/ymax
-xVertices = [0 -1 0];
-yVertices = [-1 0 1]; % yVertices should be increasing
+xVertices = -1:0.01:0;
+yVertices = arrayfun(@(x) boundary(x), xVertices);
 
-% 4 options to set the obstacle
-% 1. domain.addObstacle(xVertices, yVertices): if you want to specify all the vertices of the obstacle
-% 2. domain.addFlatEdgeObstacle(xVertices, yVertices): specify only the upstream boundary + ensure that the downstream boundary is parallel to sources
-% 3. domain.addObstacleFromEdge(xVertices, yVertices, thickness): specify only the upstream boundary + ensure that the downstream boundary is parallel to the upstream boundary
-% 4. domain.addSymmetricObstacle(xVertices, yVertices): specify ONE of the edges, flips it in the x axis to create the obstacle
-
-domain.addFlatEdgeObstacle(xVertices, yVertices);
-
-% creates the mesh
+domain.addSymmetricObstacle(xVertices, yVertices);
 domain.setModel();
-% optional: save the figure with domain.showGeometry(fileName) or domain.showGeometry(fileName, dir)
 domain.showGeometry();
 
 %% ----------------------------------------------------------
 
-
-% create PDE: dh^3/dx = F[d/dx(h^3 dh/dx) + d/dy(h^3 dh/dy)]
 pde.specifyPDE(domain);
-% code attempts to set dh/dn=epsilon boundary condition by default. 
-% if addObstacle was used, the edge is the one closest to (0,0). 
-% if another option was used, the edge is the extracted from the x/y Vertices 
-pde.applyDefaultBCs();
-
-% % if boundary conditions incorrect, set these manually
-% applyBoundaryCondition(obj.model,'dirichlet','Edge',EdgeList,'u',1);
-% applyBoundaryCondition(obj.model, 'neumann', 'Edge', EdgeList, 'q',0, 'g', 0);
-
-
-% % optional: set these if convergence issues, current values show defaults
-% pde.model.SolverOptions.MinStep = 0;
-% pde.model.SolverOptions.MaxIterations = 50;
-% pde.model.SolverOptions.ResidualTolerance = 1e-4;
 pde.model.SolverOptions.ResidualTolerance = 1e-3;
-
-
-% solve and plot answer
-%contours = linspace(0.2,3,20); % min, max contour lines, number of contour lines
-contours = 20; % alternatively simply specify the number of contour lines
 pde.solvePDE();
-% optional: save contour plot with: pde.plotSolution(contours, fileName, dir)
-pde.plotSolution(contours);
+pde.plotSolution(20);
 
 
 %% -------------------------------------------------
-% to calculate the force / graph h values
+
 solutionCalculator = SolutionCalculator(pde);
-% if you did NOT use either domain.addFlatEdgeObstacle/addObstacleFromEdge/addSymmetricObstacle, you need to specify the upstream boundary as such:
-% solutionCalculator.setBoundaryEdge(xVertices, yVertices);
 
-% use this function to get the h value at any point:
-% solutionCalculator.getH(-1.5, 1.5);
-
-% plots the height of fluid for the y values on the upstream boundary
-% optional: save plot via plotBoundarySolution(fileName, dir)
-solutionCalculator.plotBoundarySolution()
-%solutionCalculator.plotBoundarySolution("example plot", "C:\Users\liwon\Desktop\lava-flow-project\matlab\out");
-
-% get the maximum height of fluid along the wall, and the x,y coord where this occurs
 [hMax, coord] = solutionCalculator.getMaxHeight();
 fprintf('max fluid height of %.4f, at (%.3f, %.3f)', hMax, coord(1), coord(2));
 
-% calculates the force via \int h^2 n ds on the boundary
-% note: if using addSymmetricObstacle, this only gives the force on the specified edge. total magnitude should be DOUBLED
 force = solutionCalculator.calculateForce()
 magnitude = solutionCalculator.getMagnitude(force)
+
+%% -------------------------------------
+
+function y = boundary(x)
+    y = (x+1)^5;
+end
 
 
