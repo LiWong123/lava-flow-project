@@ -39,7 +39,6 @@ pde.specifyPDE(domain);
 % code attempts to set dh/dn=epsilon boundary condition by default. 
 % if addObstacle was used, the edge is the one closest to (0,0). 
 % if another option was used, the edge is the extracted from the x/y Vertices 
-pde.applyDefaultBCs();
 
 % % if boundary conditions incorrect, set these manually
 % applyBoundaryCondition(obj.model,'dirichlet','Edge',EdgeList,'u',1);
