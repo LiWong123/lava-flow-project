@@ -24,7 +24,7 @@ telements = tr.ConnectivityList';
 
 geometryFromMesh(model,tnodes,telements);
 
-generateMesh(model,'Hmax',0.03);
+generateMesh(model,'Hmax',0.1);
 % figure;
 % 	
 

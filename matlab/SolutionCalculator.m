@@ -51,21 +51,28 @@ classdef SolutionCalculator < handle
             reducedXEdge = obj.xEdge(indices);
             yy = linspace(obj.yEdge(1), obj.yEdge(end), obj.samples);
             xx = interp1(uniqYEdge, reducedXEdge, yy, "linear");
-            hh = interpolateSolution(obj.pde.results, xx, yy);
-            hh = hh';
-            
-            % removes any NaN values
-            indices = find(~isnan(hh));
-            yy = yy(indices);
-            xx = xx(indices);
-            hh = hh(indices);
+            hh = arrayfun(@(x, y) obj.safeGetH(x, y), xx, yy);
 
+        end
+
+        function h = safeGetH(obj, x, y)
+            h = interpolateSolution(obj.pde.results, x, y);
+            while isequaln(h, NaN)
+                x = x - 5e-5;
+                h = interpolateSolution(obj.pde.results, x, y);
+                if ~isequaln(h, NaN)
+                    break
+                else
+                    y = y + 5e-5;
+                    h = interpolateSolution(obj.pde.results, x, y);
+                end
+            end
         end
 
         function h = getH(obj, x, y)
             % returns the h value of the solution at (x,y)
-            h = interpolateSolution(obj.pde.results, x, y); 
-           
+            h = interpolateSolution(obj.pde.results, x, y);
+            
         end
     
 

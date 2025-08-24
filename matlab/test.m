@@ -1,4 +1,4 @@
 close all force;
 clearvars;
-warning('on', 'all');
-Powers.evaluate(1, 10, 0.1)
+
+Powers.evaluateASymPower2(0.1, 2.5, 0.05)
