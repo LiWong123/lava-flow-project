@@ -1,4 +1,4 @@
-close all force;
-clearvars;
+close all force
+clearvars
 
-Powers.evaluateASymPower2(0.1, 2.5, 0.05)
+[~,~,~,calculator] = Powers.evaluateASymPower2(1.6,0.4,0.2)

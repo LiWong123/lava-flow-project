@@ -21,7 +21,7 @@ classdef Powers
             xDomain = [xMin 10];
             yDomain = [-3 3];
             domain.setDomain(xDomain,yDomain);
-            domain.setMeshSize(0.04);
+            domain.setMeshSize(0.05);
             
             domain.addSymmetricObstacle(xEdge, yEdge);
             domain.setModel();
@@ -81,7 +81,7 @@ classdef Powers
         end
 
 
-        function [force, absForce, height] = evaluateASymPower2(x0, n, F)
+        function [force, absForce, height, solutionCalculator] = evaluateASymPower2(x0, n, F)
     
             domain = Domain();
             pde = FluidPDE();
@@ -100,14 +100,14 @@ classdef Powers
             xDomain = [xMin 10];
             yDomain = [-3 3];
             domain.setDomain(xDomain,yDomain);
-            domain.setMeshSize(0.04);
+            domain.setMeshSize(0.1);
             
             domain.addFlatEdgeObstacle(xEdge, yEdge);
             domain.setModel();
             domain.showGeometry();
 
             pde.specifyPDE(domain);
-            pde.model.SolverOptions.ResidualTolerance = 5e-4;
+            pde.model.SolverOptions.ResidualTolerance = 5.972e-5;
             try
                 pde.solvePDE();
             catch ME

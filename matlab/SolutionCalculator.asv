@@ -12,7 +12,7 @@ classdef SolutionCalculator < handle
         safeBoundaryY;
         safeBoundaryH;
 
-        dryTolerance = 0.03;
+        dryTolerance = 0.01;
         dryRegionCoords;
         dryMeshSize = 0.03;
 
@@ -232,8 +232,7 @@ classdef SolutionCalculator < handle
 
 
         function area = getDryArea(obj)
-            numPoints = length(obj.dryRegionCoords);
-            area = numPoints * (obj.dryMeshSize)^2;
+            area = length(obj.)
         end
 
         function plotDryRegion(obj)
@@ -241,7 +240,7 @@ classdef SolutionCalculator < handle
             figure('Theme', 'light'); 
             pdegplot(obj.pde.model,'EdgeLabels','on')
             hold on
-            plot(obj.dryRegionCoords(:,1), obj.dryRegionCoords(:,2), '.')
+            plot(obj.dryHull(:,1), obj.dryHull(:,2), 'o')
             
         end
         
