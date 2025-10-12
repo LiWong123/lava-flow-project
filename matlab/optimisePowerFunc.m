@@ -1,0 +1,13 @@
+solver = AlternatingDescent();
+solver.tolerance = 0.02;
+
+[x0, n, f] = solver.run( ...
+    @(x0, n) Shapes.evaluateShape(x0, n, F, ...
+        @Shapes.powerBoundary2, ...
+        @(obj,x,y) obj.addFlatEdgeObstacle(x,y)) ...
+);
+
+fprintf("F=%g -> optimal x0=%g, n=%g, force=%g\n", F, x0, n, f);
+
+% Save results to file
+save(sprintf('results_F%g.mat', F), 'F', 'x0', 'n', 'f');

@@ -24,6 +24,6 @@
 
 module load MATLAB
 
-time matlab -nodesktop -nodisplay -nosplash < parallelpowersasym2.m
+time matlab -nodesktop -nodisplay -nosplash < parallelASymEllipses.m
 
 

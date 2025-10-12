@@ -89,6 +89,9 @@ classdef FluidPDE < handle
         end
        
         
+        
+
+
 
         function solvePDE(obj)
             initfun = obj.fluidModel.initfunc();
@@ -97,10 +100,6 @@ classdef FluidPDE < handle
             obj.results = results;
         end
 
-        
-        function heights = getFluidHeightAt(obj, xx, yy)
-            heights =obj.fluidModel.getFluidHeightAt(obj.results, xx, yy);
-        end
 
         % function solveIteratively(obj)
         % 

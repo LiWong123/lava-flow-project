@@ -11,7 +11,7 @@ pde.setFF(0.1); % set the F value
 xDomain = [-3 10]; % solve for a<x<b
 yDomain = [-3 3]; % solve for c<y<d
 domain.setDomain(xDomain,yDomain);
-domain.setMeshSize(0.1); % set resolution of solver
+domain.setMeshSize(0.04); % set resolution of solver
 
 % set obstacle location via the vertices of the obstacle. ensure the vertices are listed either clockwise or counterclockwise 
 % limitations: the obstacle boundary must not have dy/dx = 0 except possibly at ymin/ymax

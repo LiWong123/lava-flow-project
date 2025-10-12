@@ -16,7 +16,6 @@ progresstracker = HPC(N);
 dq = parallel.pool.DataQueue;
 afterEach(dq, @(~) progresstracker.updateProgress());
 
-%% --- Start parallel pool ---
 
 results = zeros(N, 7);  % columns: F,n,x0,forceX,forceY,absForce,height
 

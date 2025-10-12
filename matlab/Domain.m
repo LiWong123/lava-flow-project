@@ -133,22 +133,23 @@ classdef Domain < handle
             ymid = (obj.ymax + obj.ymin)/2;
             
             % these are the edges on the boundary of the domain
-            sourceEdge = [nearestEdge(obj.model.Geometry, [obj.xmin, ymid])];
-            freeFluxEdges = [nearestEdge(obj.model.Geometry, [obj.xmax, ymid]), ...
+            farFieldEdge = [nearestEdge(obj.model.Geometry, [obj.xmin, ymid]),...
                 nearestEdge(obj.model.Geometry, [xmid, obj.ymin]), ...
                 nearestEdge(obj.model.Geometry, [xmid, obj.ymax])];
+            freeFluxEdge = [nearestEdge(obj.model.Geometry, [obj.xmax, ymid])];
+                
             
             % edges not on the boundary
-            farFieldEdges = [sourceEdge, freeFluxEdges];
+            nonObstacleEdges = [farFieldEdge, freeFluxEdge];
             obstacleEdges = [];
             for i = 1:obj.model.Geometry.NumEdges
-                if not(ismember(i, farFieldEdges))
+                if not(ismember(i, nonObstacleEdges))
                     obstacleEdges = [obstacleEdges, i];
                 end
             end
 
-            edgeDict = dictionary(["source", "freeFlux", "obstacle"], ...
-                {sourceEdge, freeFluxEdges, obstacleEdges});
+            edgeDict = dictionary(["farfield", "freeflux", "obstacle"], ...
+                {farFieldEdge, freeFluxEdge, obstacleEdges});
 
         end
 

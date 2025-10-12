@@ -48,6 +48,7 @@ classdef SolutionCalculator < handle
         end
 
 
+
         function [hh, xx, yy] = safeInterpBoundary(obj)
             
             % removes part of the boundary where dy/dx=0 to allow iteration over y direction
@@ -60,24 +61,25 @@ classdef SolutionCalculator < handle
         end
 
         function h = safeGetH(obj, x, y)
-            h = interpolateSolution(obj.pde.results, x, y);
+            h = obj.pde.getFluidHeightAt(x, y);
             while isequaln(h, NaN)
                 x = x - 5e-5;
-                h = interpolateSolution(obj.pde.results, x, y);
+                h = obj.pde.getFluidHeightAt(x, y);
                 if ~isequaln(h, NaN)
                     break
                 else
                     y = y + 5e-5;
-                    h = interpolateSolution(obj.pde.results, x, y);
+                    h = obj.pde.getFluidHeightAt(x, y);
                 end
             end
         end
 
-        function h = getH(obj, x, y)
-            % returns the h value of the solution at (x,y)
-            h = interpolateSolution(obj.pde.results, x, y);
-            
-        end
+        % depreciated function
+        % function h = getH(obj, x, y)
+        %     % returns the h value of the solution at (x,y)
+        %     h = interpolateSolution(obj.pde.results, x, y);
+        % 
+        % end
     
 
         function force = calculateForce(obj)
@@ -113,7 +115,7 @@ classdef SolutionCalculator < handle
             coord = r(t);
             x = coord(1);
             y = coord(2);
-            h = interpolateSolution(obj.pde.results, x, y);
+            h = obj.pde.getFluidHeightAt(x, y);
             if isnan(h)
                 h = interp1(obj.safeBoundaryY, obj.safeBoundaryH, y, 'linear');
             end
@@ -195,7 +197,7 @@ classdef SolutionCalculator < handle
 
             [X, Y] = meshgrid(xvals,yvals);
 
-            heights = interpolateSolution(obj.pde.results, X, Y);
+            heights = obj.pde.getFluidHeightAt(X, Y);
             minval = min(heights(:),[],'omitnan');
             cutoff = minval + obj.dryTolerance;
 
@@ -203,9 +205,9 @@ classdef SolutionCalculator < handle
 
         function bool = checkInDryRegion(obj, x, y, cutoff)
             
-            if isnan(interpolateSolution(obj.pde.results, x, y))
+            if isnan(obj.pde.getFluidHeightAt(x, y))
                 bool = false;
-            elseif interpolateSolution(obj.pde.results, x, y) < cutoff
+            elseif obj.pde.getFluidHeightAt(x, y) < cutoff
                 bool = true;
             else
                 bool = false;

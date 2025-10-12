@@ -1,22 +1,24 @@
-import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("powerResultsV2.csv")
+# Rosenbrock function
+def rosenbrock(x, y, a=1, b=10):
+    return (a - x)**2 + b*(y - x**2)**2
 
-# Group by F, then by x0, and pick the row with smallest force
-min_force_df = df.loc[df.groupby(["F", "n"])["abs(force)"].idxmin()]
+# Grid
+x = np.linspace(-2, 2, 500)
+y = np.linspace(-1, 3, 500)
+X, Y = np.meshgrid(x, y)
+Z = rosenbrock(X, Y)
 
+# Mask values where Z > 0.2
+Z_masked = np.ma.masked_where(Z > 0.2, Z)
 
-# Create one figure
-plt.figure(figsize=(8,6))
-
-# Plot each F on the same axes
-for F_value, group in min_force_df.groupby("F"):
-    # Sort by x0 for cleaner line plotting
-    group_sorted = group.sort_values("n")
-    plt.plot(group_sorted["n"], group_sorted["x0"], marker=".", label=f"F = {F_value}")
-
-
-plt.legend(title="F")
-plt.grid(True)
+# Plot heatmap
+plt.figure(figsize=(6,5))
+c = plt.pcolormesh(X, Y, Z_masked, shading='auto', cmap='viridis')
+plt.colorbar(c, label='Rosenbrock value')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Rosenbrock Heatmap (cutoff z > 0.2)')
 plt.show()
