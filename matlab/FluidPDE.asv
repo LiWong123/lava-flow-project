@@ -89,9 +89,6 @@ classdef FluidPDE < handle
         end
        
         
-        
-
-
 
         function solvePDE(obj)
             initfun = obj.fluidModel.initfunc();
@@ -100,45 +97,52 @@ classdef FluidPDE < handle
             obj.results = results;
         end
 
+        
+        function heights = getFluidHeightAt(obj, xx, yy)
+            heights =obj.fluidModel.getFluidHeightAt(obj.results, xx, yy);
+        end
 
-        % function solveIteratively(obj)
-        % 
-        %     curEpsilon = 0.1;
-        %     curMeshSize = 0.1;
-        % 
-        %     numIterations = ceil(log10(curEpsilon/obj.epsilon)) + 1;
-        %     meshDiff = (curMeshSize-obj.domain.meshSize)/numIterations;
-        % 
-        %     obj.domain.setModel(curMeshSize);
-        %     obj.specifyPDE(obj.domain);
-        % 
-        % 
-        %     initfun = @(locations) (1 + locations.x*0);
-        %     setInitialConditions(obj.model, initfun);
-        % 
-        %     for i = 1:numIterations
-        % 
-        %         fprintf('solving for epsilon = %d, meshsize = %d\n', curEpsilon, curMeshSize);
-        % 
-        % 
-        %         obj.applyDefaultBCs(curEpsilon)
-        %         obj.model.SolverOptions.MinStep = 0;
-        %         obj.model.SolverOptions.MaxIterations = 100;
-        %         obj.model.SolverOptions.ResidualTolerance = 1e-4;
-        % 
-        %         results = solvepde(obj.model);
-        %         obj.results = results;
-        % 
-        %         obj.domain.setModel(curMeshSize);
-        %         obj.specifyPDE(obj.domain)
-        % 
-        %         initfun = @obj.cleanInterp;
-        %         setInitialConditions(obj.model, initfun);
-        %         curEpsilon = curEpsilon/10;
-        %         curMeshSize = curMeshSize - meshDiff;
-        % 
-        %     end
-        % end
+
+        
+
+        function solveIteratively(obj)
+
+            curEpsilon = 0.1;
+            curMeshSize = 0.1;
+
+            numIterations = ceil(log10(curEpsilon/obj.epsilon)) + 1;
+            meshDiff = (curMeshSize-obj.domain.meshSize)/numIterations;
+
+            obj.domain.setModel(curMeshSize);
+            obj.specifyPDE(obj.domain);
+
+
+            initfun = @(locations) (1 + locations.x*0);
+            setInitialConditions(obj.model, initfun);
+
+            for i = 1:numIterations
+
+                fprintf('solving for epsilon = %d, meshsize = %d\n', curEpsilon, curMeshSize);
+
+
+                obj.applyDefaultBCs(curEpsilon)
+                obj.model.SolverOptions.MinStep = 0;
+                obj.model.SolverOptions.MaxIterations = 100;
+                obj.model.SolverOptions.ResidualTolerance = 1e-4;
+
+                results = solvepde(obj.model);
+                obj.results = results;
+
+                obj.domain.setModel(curMeshSize);
+                obj.specifyPDE(obj.domain)
+
+                initfun = @obj.cleanInterp;
+                setInitialConditions(obj.model, initfun);
+                curEpsilon = curEpsilon/10;
+                curMeshSize = curMeshSize - meshDiff;
+
+            end
+        end
         % 
         % function values = cleanInterp(obj, location)
         %     vals = interpolateSolution(obj.results, location.x, location.y);
@@ -150,33 +154,32 @@ classdef FluidPDE < handle
         % end
 
 
-
-
         function plotSolution(obj, levels, fileName, dir)
-            % contour plot. allow user to specify contour lines
-            
-            % default 20 contour lines if no input given
             if nargin == 1
                 levels = 20;
             end
-
-            u = obj.results.NodalSolution;
-            figure('Theme', 'light');
             
-            pdeplot(obj.model,'xydata',u(:,1),'contour','on',...
-            'colorbar', 'on',...
-            'levels',levels,'mesh','off','xystyle','off');
+            figure('Theme', 'light');
+            dx=0.05;
+            x=obj.domain.xmin:dx:obj.domain.xmax;
+            y=obj.domain.ymin:dx:obj.domain.ymax;
+            [XX,YY]=meshgrid(x,y);
+
+            uu=obj.getFluidHeightAt(XX,YY);
+            hh=reshape(uu,length(y),length(x));
+            contourf(XX,YY,hh,levels); 
             hold on;
-            p = pdegplot(obj.model,'EdgeLabels','off');
-            set(p, 'Color', 'k', 'LineWidth', 1.5);
+            colorbar;
+
 
             if nargin == 3
                 Utils.saveFigure(fileName)
             elseif nargin == 4
                 Utils.saveFigure(fileName, dir)
             end
-
         end
+
+
 
     end
     

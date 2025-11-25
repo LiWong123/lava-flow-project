@@ -1,17 +1,26 @@
 close all force;
 clearvars;
-% note: if directory not specified, figures will be saved to curdir/figures
+% note: if directory not specified, figures will be saved to pwd/figures
 
 domain = Domain();
-pde = FluidPDE();
+
+% choose newtonian or bingham model
+% fluidModel = NewtonianModel();
+% fluidModel.setFF(1);
+
+fluidModel = BinghamModel();
+fluidModel.setBinghamConstant(0.2);
+fluidModel.setAspectRatio(0.1);
+
+pde = FluidPDE(fluidModel);
 pde.setVerbosity(true); % enables warnings/solvepde statistics
-pde.setFF(0.1); % set the F value
 %pde.setEpsilon(1e-7); % set epsilon value: default is 1e-7
 
-xDomain = [-3 10]; % solve for a<x<b
+
+xDomain = [-3 7]; % solve for a<x<b
 yDomain = [-3 3]; % solve for c<y<d
 domain.setDomain(xDomain,yDomain);
-domain.setMeshSize(0.04); % set resolution of solver
+domain.setMeshSize(0.1); % set resolution of solver
 
 % set obstacle location via the vertices of the obstacle. ensure the vertices are listed either clockwise or counterclockwise 
 % limitations: the obstacle boundary must not have dy/dx = 0 except possibly at ymin/ymax
@@ -33,28 +42,25 @@ domain.showGeometry();
 
 %% ----------------------------------------------------------
 
-
-% create PDE: dh^3/dx = F[d/dx(h^3 dh/dx) + d/dy(h^3 dh/dy)]
 pde.specifyPDE(domain);
 % code attempts to set dh/dn=epsilon boundary condition by default. 
 % if addObstacle was used, the edge is the one closest to (0,0). 
 % if another option was used, the edge is the extracted from the x/y Vertices 
+
 
 % % if boundary conditions incorrect, set these manually
 % applyBoundaryCondition(obj.model,'dirichlet','Edge',EdgeList,'u',1);
 % applyBoundaryCondition(obj.model, 'neumann', 'Edge', EdgeList, 'q',0, 'g', 0);
 
 
-% % optional: set these if convergence issues, current values show defaults
+% % optional: set these if convergence issues, set maxiterations higher for bingham fluids
 % pde.model.SolverOptions.MinStep = 0;
 % pde.model.SolverOptions.MaxIterations = 50;
 % pde.model.SolverOptions.ResidualTolerance = 1e-4;
-pde.model.SolverOptions.ResidualTolerance = 5e-4;
 
 
 % solve and plot answer
-%contours = linspace(0.2,3,20); % min, max contour lines, number of contour lines
-contours = 20; % alternatively simply specify the number of contour lines
+contours = 20; % specify the number of contour lines
 pde.solvePDE();
 % optional: save contour plot with: pde.plotSolution(contours, fileName, dir)
 pde.plotSolution(contours);

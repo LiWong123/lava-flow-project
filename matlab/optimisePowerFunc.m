@@ -1,5 +1,5 @@
 solver = AlternatingDescent();
-solver.tolerance = 0.02;
+solver.tolerance = 0.001;
 
 [x0, n, f] = solver.run( ...
     @(x0, n) Shapes.evaluateShape(x0, n, F, ...

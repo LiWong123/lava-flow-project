@@ -1,70 +1,41 @@
-close all force;
-clearvars;
-% note: if directory not specified, figures will be saved to curdir/figures
+params = [
+    0.3  0.1  0.9  1.0;
+    0.3  0.2  0.7  0.9;
+    0.3  0.3  0.6  0.8;
+    0.3  0.4  0.5  0.7;
+    0.3  0.5  0.5  0.6;
+    0.4  0.1  0.8  1.0;
+    0.4  0.2  0.5  0.9;
+    0.4  0.3  0.6  0.8;
+    0.4  0.4  0.5  0.7;
+    0.4  0.5  0.5  0.6;
+    0.5  0.1  0.8  1.0;
+    0.5  0.2  0.6  0.9;
+    0.5  0.3  0.6  0.8;
+    0.5  0.4  0.5  0.7;
+    0.5  0.5  0.5  0.7;
+    
+];
 
-domain = Domain();
-% fluidModel = BinghamModel();
-% fluidModel.setBinghamConstant(0.2); % set the F value
-% fluidModel.setAspectRatio(0.2);
+for k = 1:size(params, 1)
 
-fluidModel = NewtonianModel();
-fluidModel.setFF(0.2);
+    BB  = params(k, 1);
+    AR  = params(k, 2);
+    n  = params(k, 3);
+    x0 = params(k, 4);
 
-pde = FluidPDE(fluidModel);
-pde.setVerbosity(true); % enables warnings/solvepde statistics
+    model = BinghamModel();
+    model.setAspectRatio(AR);    
+    model.setBinghamConstant(BB);  
 
+    shapeCalculator = Shapes(model);
+    shapeCalculator.meshSize = 0.06;
+    shapeCalculator.verbosity = true;
+    shapeCalculator.showSolution = true;
 
-%pde.setEpsilon(1e-7); % set epsilon value: default is 1e-7
-
-xDomain = [-3 5]; % solve for a<x<b
-yDomain = [-3 3]; % solve for c<y<d
-domain.setDomain(xDomain,yDomain);
-domain.setMeshSize(0.1); % set resolution of solver
-
-% set obstacle location via the vertices of the obstacle. ensure the vertices are listed either clockwise or counterclockwise 
-% limitations: the obstacle boundary must not have dy/dx = 0 except possibly at ymin/ymax
-xVertices = [-1 0];
-yVertices = [0 1]; % yVertices should be increasing
-
-% 4 options to set the obstacle
-% 1. domain.addObstacle(xVertices, yVertices): if you want to specify all the vertices of the obstacle
-% 2. domain.addFlatEdgeObstacle(xVertices, yVertices): specify only the upstream boundary + ensure that the downstream boundary is parallel to sources
-% 3. domain.addObstacleFromEdge(xVertices, yVertices, thickness): specify only the upstream boundary + ensure that the downstream boundary is parallel to the upstream boundary
-% 4. domain.addSymmetricObstacle(xVertices, yVertices): specify ONE of the edges, flips it in the x axis to create the obstacle
-
-domain.addSymmetricObstacle(xVertices, yVertices);
-
-% creates the mesh
-domain.setModel();
-% optional: save the figure with domain.showGeometry(fileName) or domain.showGeometry(fileName, dir)
-domain.showGeometry();
-
-%% ----------------------------------------------------------
+    [absforce, force, height] = shapeCalculator.evaluateShape( ...
+        x0, n, @Shapes.powerBoundary, ...
+        @(obj,x,y)obj.addSymmetricObstacle(x,y));
 
 
-
-pde.specifyPDE(domain);
-pde.model.SolverOptions.ResidualTolerance = 5e-4;
-pde.solvePDE();
-pde.plotSolution();
-
-solutionCalculator = SolutionCalculator(pde);
-% if you did NOT use either domain.addFlatEdgeObstacle/addObstacleFromEdge/addSymmetricObstacle, you need to specify the upstream boundary as such:
-% solutionCalculator.setBoundaryEdge(xVertices, yVertices);
-
-% use this function to get the h value at any point:
-% solutionCalculator.getH(-1.5, 1.5);
-
-% plots the height of fluid for the y values on the upstream boundary
-% optional: save plot via plotBoundarySolution(fileName, dir)
-solutionCalculator.plotBoundarySolution("example plot")
-%solutionCalculator.plotBoundarySolution("example height plot", "C:\Users\liwon\Desktop\lava-flow-project\matlab\out");
-
-% get the maximum height of fluid along the wall, and the x,y coord where this occurs
-[hMax, coord] = solutionCalculator.getMaxHeight();
-fprintf('max fluid height of %.4f, at (%.3f, %.3f)', hMax, coord(1), coord(2));
-
-% calculates the force via \int h^2 n ds on the boundary
-% note: if using addSymmetricObstacle, this only gives the force on the specified edge. total magnitude should be DOUBLED
-force = solutionCalculator.calculateForce()
-magnitude = solutionCalculator.getMagnitude(force)
+end

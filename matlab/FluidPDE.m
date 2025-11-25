@@ -6,8 +6,8 @@ classdef FluidPDE < handle
 
         epsilon = 1e-7;
         verbosity = false;
-        domain;
-        model;
+        domain = NaN;
+        model = NaN;
         results;
         fluidModel;
         
@@ -35,8 +35,15 @@ classdef FluidPDE < handle
             
             % imports the model mesh from the geometry and
             % sets the equation dh^3/dx = F[d/dx(h^3 dh/dx) + d/dy(h^3 dh/dy)]
-            obj.domain = domain;
-            obj.model = domain.model;
+
+            if nargin == 2
+                obj.domain = domain;
+                obj.model = domain.model;
+            elseif isequaln(obj.domain, NaN) || isequaln(obj.model, NaN)
+                error('domain not specified');
+            end
+
+            
 
             specifyCoefficients(obj.model, ...
                 'm', 0, ...
@@ -95,11 +102,15 @@ classdef FluidPDE < handle
             setInitialConditions(obj.model,initfun);
             results=solvepde(obj.model);
             obj.results = results;
-        end
+        end 
 
         
         function heights = getFluidHeightAt(obj, xx, yy)
             heights =obj.fluidModel.getFluidHeightAt(obj.results, xx, yy);
+        end
+
+        function solveIteratively(obj)
+            obj.fluidModel.solveIteratively(obj);
         end
 
         % function solveIteratively(obj)
@@ -151,33 +162,32 @@ classdef FluidPDE < handle
         % end
 
 
-
-
         function plotSolution(obj, levels, fileName, dir)
-            % contour plot. allow user to specify contour lines
-            
-            % default 20 contour lines if no input given
             if nargin == 1
                 levels = 20;
             end
-
-            u = obj.results.NodalSolution;
-            figure('Theme', 'light');
             
-            pdeplot(obj.model,'xydata',u(:,1),'contour','on',...
-            'colorbar', 'on',...
-            'levels',levels,'mesh','off','xystyle','off');
+            figure('Theme', 'light');
+            dx=0.05;
+            x=obj.domain.xmin:dx:obj.domain.xmax;
+            y=obj.domain.ymin:dx:obj.domain.ymax;
+            [XX,YY]=meshgrid(x,y);
+
+            uu=obj.getFluidHeightAt(XX,YY);
+            hh=reshape(uu,length(y),length(x));
+            contourf(XX,YY,hh,levels); 
             hold on;
-            p = pdegplot(obj.model,'EdgeLabels','off');
-            set(p, 'Color', 'k', 'LineWidth', 1.5);
+            colorbar;
+
 
             if nargin == 3
                 Utils.saveFigure(fileName)
             elseif nargin == 4
                 Utils.saveFigure(fileName, dir)
             end
-
         end
+
+
 
     end
     

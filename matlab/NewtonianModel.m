@@ -1,4 +1,4 @@
-classdef NewtonianModel < handle
+ classdef NewtonianModel < handle
     
     properties (Access = public)
         FF=0.1
